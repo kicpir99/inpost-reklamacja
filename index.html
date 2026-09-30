@@ -191,8 +191,44 @@
         </p>
 
         <div id="submission-preview" class="submission-preview" style="display:none;">
-          <h4>Zarejestrowane dane zgłoszenia reklamacji:</h4>
-          <pre id="submitted-data-json"></pre>
+          <div class="preview-header">
+            <span class="preview-badge">Symulacja wysyłki</span>
+            <h4>Automatyczne powiadomienia e-mail</h4>
+          </div>
+
+          <!-- Przełącznik widoków mailowych -->
+          <div class="preview-tabs">
+            <button type="button" class="preview-tab active" data-tab="email-customer">✉️ Do Klienta</button>
+            <button type="button" class="preview-tab" data-tab="email-store">📥 Do Sklepu</button>
+            <button type="button" class="preview-tab" data-tab="raw-json">⚙️ JSON</button>
+          </div>
+
+          <!-- Widok 1: Mail do Klienta -->
+          <div class="tab-pane active" id="pane-email-customer">
+            <div class="email-mock-box">
+              <div class="email-meta">
+                <div><strong>Do:</strong> <span id="mail-to-customer"></span></div>
+                <div><strong>Temat:</strong> Potwierdzenie przyjęcia reklamacji <span id="mail-subject-order"></span></div>
+              </div>
+              <div class="email-body-text" id="mail-customer-content"></div>
+            </div>
+          </div>
+
+          <!-- Widok 2: Mail do Sklepu -->
+          <div class="tab-pane" id="pane-email-store">
+            <div class="email-mock-box">
+              <div class="email-meta">
+                <div><strong>Do:</strong> serwis-reklamacje@twojsklep.pl</div>
+                <div><strong>Temat:</strong> [NOWE ZGŁOSZENIE] Reklamacja <span id="mail-store-order"></span></div>
+              </div>
+              <div class="email-body-text" id="mail-store-content"></div>
+            </div>
+          </div>
+
+          <!-- Widok 3: Surowe dane JSON -->
+          <div class="tab-pane" id="pane-raw-json">
+            <pre id="submitted-data-json"></pre>
+          </div>
         </div>
       </aside>
     </main>

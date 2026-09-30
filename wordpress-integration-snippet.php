@@ -3,8 +3,25 @@
  * Gotowy, niezawodny fragment kodu dla WordPressa do wdrożenia wyboru Paczkomatu InPost
  * w formularzu reklamacji BEZ WYMOGU TOKENU API (korzysta z oficjalnego, publicznego API punktów InPost).
  *
- * Możesz wkleić ten kod do pliku functions.php motywu potomnego (Child Theme)
- * lub dodać jako snippet we wtyczce WPCode / Code Snippets.
+ * Sposób konfiguracji powiadomień E-MAIL w Twojej wtyczce formularzy (np. Contact Form 7, WPForms, Fluent Forms):
+ * 
+ * 1. E-MAIL DO KLIENTA (Autoresponder):
+ *    - Odbiorca: [customer_email]
+ *    - Treść:
+ *      Dzień dobry [customer_name],
+ *      Przyjęliśmy Twoje zgłoszenie do zamówienia [order_number].
+ *      Sprzęt po naprawie odeślemy:
+ *      Paczkomat: [paczkomat_kod] [paczkomat_adres]
+ *      lub Kurierem: [courier_street], [courier_postcode] [courier_city]
+ *
+ * 2. E-MAIL DO OBSŁUGI SKLEPU / MAGAZYNU:
+ *    - Odbiorca: reklamacje@twojsklep.pl
+ *    - Treść:
+ *      Nowa reklamacja do zamówienia: [order_number]
+ *      Klient: [customer_name] (tel: [customer_phone], email: [customer_email])
+ *      Forma wysyłki: [delivery_method]
+ *      Docelowy paczkomat: [paczkomat_kod] ([paczkomat_adres])
+ *      Adres kuriera: [courier_street], [courier_postcode] [courier_city] (uwagi: [courier_notes])
  */
 
 add_action('wp_enqueue_scripts', 'inpost_reklamacja_enqueue_assets');

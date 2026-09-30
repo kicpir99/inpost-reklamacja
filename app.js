@@ -343,21 +343,40 @@ document.addEventListener("DOMContentLoaded", () => {
         executeSearch();
       }
     });
-  }
+  // Obsługa zakładek w podglądzie e-maili
+  const previewTabs = document.querySelectorAll(".preview-tab");
+  previewTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      previewTabs.forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+
+      tab.classList.add("active");
+      const targetId = `pane-${tab.getAttribute("data-tab")}`;
+      const pane = document.getElementById(targetId);
+      if (pane) pane.classList.add("active");
+    });
+  });
 });
 
 function handleSubmit() {
   const deliveryMethod = document.querySelector('input[name="delivery_method"]:checked')?.value || "paczkomat";
+  const orderNumber = document.getElementById("order_number").value;
+  const customerName = document.getElementById("customer_name").value;
+  const customerEmail = document.getElementById("customer_email").value;
+  const customerPhone = document.getElementById("customer_phone").value;
+  const issueDesc = document.getElementById("issue_desc").value;
 
   const payload = {
-    order_number: document.getElementById("order_number").value,
-    customer_name: document.getElementById("customer_name").value,
-    customer_email: document.getElementById("customer_email").value,
-    customer_phone: document.getElementById("customer_phone").value,
-    issue_desc: document.getElementById("issue_desc").value,
+    order_number: orderNumber,
+    customer_name: customerName,
+    customer_email: customerEmail,
+    customer_phone: customerPhone,
+    issue_desc: issueDesc,
     delivery_method: deliveryMethod,
     submitted_at: new Date().toISOString()
   };
+
+  let deliverySummaryText = "";
 
   if (deliveryMethod === "paczkomat") {
     const paczkomatKod = document.getElementById("paczkomat_kod").value;
@@ -372,6 +391,7 @@ function handleSubmit() {
 
     payload.paczkomat_kod = paczkomatKod;
     payload.paczkomat_adres = paczkomatAdres;
+    deliverySummaryText = `Paczkomat InPost: ${paczkomatKod}\nAdres punktu: ${paczkomatAdres}\n(Gdy sprzęt zostanie naprawiony i nadany, otrzymasz SMS z kodem odbioru paczki).`;
 
     alert("Formularz reklamacji został wysłany!\nDoręczenie do Paczkomatu: " + paczkomatKod + " (" + paczkomatAdres + ")");
 
@@ -394,12 +414,67 @@ function handleSubmit() {
       notes: notes || null
     };
 
+    deliverySummaryText = `Kurier pod adres:\n${street}, ${postcode} ${city}` + (notes ? `\nUwagi: ${notes}` : "");
+
     alert("Formularz reklamacji został wysłany!\nDoręczenie kurierem pod adres: " + street + ", " + postcode + " " + city);
   }
 
-  const preview = document.getElementById("submission-preview");
-  const pre = document.getElementById("submitted-data-json");
+  // 1. Wypełnienie e-maila do klienta
+  const mailToCustomer = document.getElementById("mail-to-customer");
+  const mailSubjectOrder = document.getElementById("mail-subject-order");
+  const mailCustomerContent = document.getElementById("mail-customer-content");
 
+  if (mailToCustomer) mailToCustomer.textContent = customerEmail;
+  if (mailSubjectOrder) mailSubjectOrder.textContent = orderNumber;
+  if (mailCustomerContent) {
+    mailCustomerContent.textContent = 
+`Dzień dobry ${customerName},
+
+Dziękujemy za zgłoszenie reklamacji do zamówienia ${orderNumber}.
+Twoje zgłoszenie zostało zarejestrowane w naszym systemie serwisowym.
+
+📋 Zgłoszony problem:
+"${issueDesc}"
+
+📦 Wybrana forma doręczenia naprawionego sprzętu:
+${deliverySummaryText}
+
+Status reklamacji możesz śledzić kontaktując się z nami podając numer zamówienia ${orderNumber}.
+
+Pozdrawiamy,
+Dział Reklamacji i Wsparcia Technicznego`;
+  }
+
+  // 2. Wypełnienie e-maila do sklepu / serwisu
+  const mailStoreOrder = document.getElementById("mail-store-order");
+  const mailStoreContent = document.getElementById("mail-store-content");
+
+  if (mailStoreOrder) mailStoreOrder.textContent = `${orderNumber} - ${customerName}`;
+  if (mailStoreContent) {
+    mailStoreContent.textContent =
+`Zarejestrowano nowe zgłoszenie reklamacyjne w sklepie!
+
+Dane klienta:
+- Imię i nazwisko: ${customerName}
+- E-mail: ${customerEmail}
+- Telefon: ${customerPhone}
+- Zamówienie: ${orderNumber}
+
+Opis usterki:
+${issueDesc}
+
+DANE DO WYGENEROWANIA ETYKIETY ZWROTNEJ:
+Metoda wysyłki: ${deliveryMethod === 'paczkomat' ? 'PACZKOMAT INPOST' : 'KURIER'}
+${deliverySummaryText}
+
+Czas zgłoszenia: ${new Date().toLocaleString('pl-PL')}`;
+  }
+
+  // 3. Surowy JSON
+  const pre = document.getElementById("submitted-data-json");
   if (pre) pre.textContent = JSON.stringify(payload, null, 2);
+
+  // Odsłonięcie sekcji podglądu
+  const preview = document.getElementById("submission-preview");
   if (preview) preview.style.display = "block";
 }
