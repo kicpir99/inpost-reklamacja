@@ -343,6 +343,8 @@ document.addEventListener("DOMContentLoaded", () => {
         executeSearch();
       }
     });
+  }
+
   // Obsługa zakładek w podglądzie e-maili
   const previewTabs = document.querySelectorAll(".preview-tab");
   previewTabs.forEach((tab) => {
