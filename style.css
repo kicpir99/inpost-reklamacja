@@ -187,6 +187,146 @@ body {
   color: #475569;
 }
 
+/* WYBÓR METODY DOSTAWY */
+.delivery-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  .delivery-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.delivery-card {
+  position: relative;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.delivery-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.delivery-card:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.delivery-card.active {
+  border-color: #2563eb;
+  background: #f0f7ff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.delivery-card#card-paczkomat.active {
+  border-color: #eab308;
+  background: #fefce8;
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.12);
+}
+
+.delivery-card-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.delivery-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.delivery-icon-box.inpost-bg {
+  background: #ffcc00;
+  color: #000000;
+}
+
+.delivery-icon-box.courier-bg {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.delivery-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.delivery-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.delivery-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.radio-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.delivery-card.active .radio-indicator {
+  border-color: #2563eb;
+  background: #2563eb;
+}
+
+.delivery-card#card-paczkomat.active .radio-indicator {
+  border-color: #111827;
+  background: #ffcc00;
+}
+
+.delivery-card.active .radio-indicator::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.delivery-card#card-paczkomat.active .radio-indicator::after {
+  background: #111827;
+}
+
+/* Sekcja kuriera */
+.courier-section {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 24px;
+  animation: fadeIn 0.25s ease;
+}
+
+.courier-header {
+  margin-bottom: 12px;
+}
+
 /* Sekcja paczkomatu */
 .paczkomat-section {
   background: #fffdf5;
@@ -194,6 +334,7 @@ body {
   border-radius: var(--radius-md);
   padding: 20px;
   margin-bottom: 24px;
+  animation: fadeIn 0.25s ease;
 }
 
 .paczkomat-header {

@@ -257,6 +257,48 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchBtn = document.getElementById("btn-search-city");
   const cityPills = document.querySelectorAll(".city-pill");
 
+  // Obsługa wyboru metody dostawy (Paczkomat vs Kurier)
+  const deliveryRadios = document.querySelectorAll('input[name="delivery_method"]');
+  const paczkomatSection = document.getElementById("paczkomat-section");
+  const courierSection = document.getElementById("courier-section");
+  const cardPaczkomat = document.getElementById("card-paczkomat");
+  const cardCourier = document.getElementById("card-courier");
+
+  function updateDeliveryMethodUI() {
+    const selectedMethod = document.querySelector('input[name="delivery_method"]:checked')?.value || "paczkomat";
+
+    if (selectedMethod === "paczkomat") {
+      paczkomatSection.style.display = "block";
+      courierSection.style.display = "none";
+      cardPaczkomat.classList.add("active");
+      cardCourier.classList.remove("active");
+    } else {
+      paczkomatSection.style.display = "none";
+      courierSection.style.display = "block";
+      cardCourier.classList.add("active");
+      cardPaczkomat.classList.remove("active");
+    }
+  }
+
+  deliveryRadios.forEach((radio) => {
+    radio.addEventListener("change", updateDeliveryMethodUI);
+  });
+
+  // Kliknięcie w całą kartę przełącza radio
+  if (cardPaczkomat) {
+    cardPaczkomat.addEventListener("click", () => {
+      const radio = cardPaczkomat.querySelector('input[type="radio"]');
+      if (radio) { radio.checked = true; updateDeliveryMethodUI(); }
+    });
+  }
+
+  if (cardCourier) {
+    cardCourier.addEventListener("click", () => {
+      const radio = cardCourier.querySelector('input[type="radio"]');
+      if (radio) { radio.checked = true; updateDeliveryMethodUI(); }
+    });
+  }
+
   function openModal() {
     modal.style.display = "flex";
     initLeafletMap();
@@ -305,27 +347,59 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function handleSubmit() {
+  const deliveryMethod = document.querySelector('input[name="delivery_method"]:checked')?.value || "paczkomat";
+
   const payload = {
     order_number: document.getElementById("order_number").value,
     customer_name: document.getElementById("customer_name").value,
     customer_email: document.getElementById("customer_email").value,
     customer_phone: document.getElementById("customer_phone").value,
     issue_desc: document.getElementById("issue_desc").value,
-    paczkomat_kod: document.getElementById("paczkomat_kod").value,
-    paczkomat_adres: document.getElementById("paczkomat_adres").value,
+    delivery_method: deliveryMethod,
     submitted_at: new Date().toISOString()
   };
 
-  if (!payload.paczkomat_kod) {
-    alert("Proszę najpierw wybrać Paczkomat z mapy.");
-    return;
+  if (deliveryMethod === "paczkomat") {
+    const paczkomatKod = document.getElementById("paczkomat_kod").value;
+    const paczkomatAdres = document.getElementById("paczkomat_adres").value;
+
+    if (!paczkomatKod) {
+      alert("Proszę najpierw wybrać Paczkomat z mapy.");
+      const openBtn = document.getElementById("open-inpost-btn");
+      if (openBtn) openBtn.click();
+      return;
+    }
+
+    payload.paczkomat_kod = paczkomatKod;
+    payload.paczkomat_adres = paczkomatAdres;
+
+    alert("Formularz reklamacji został wysłany!\nDoręczenie do Paczkomatu: " + paczkomatKod + " (" + paczkomatAdres + ")");
+
+  } else {
+    // Kurier
+    const street = document.getElementById("courier_street").value.trim();
+    const postcode = document.getElementById("courier_postcode").value.trim();
+    const city = document.getElementById("courier_city").value.trim();
+    const notes = document.getElementById("courier_notes").value.trim();
+
+    if (!street || !postcode || !city) {
+      alert("Proszę uzupełnić wszystkie wymagane pola adresu doręczenia kurierskiego (ulica, kod pocztowy, miejscowość).");
+      return;
+    }
+
+    payload.courier_address = {
+      street: street,
+      postcode: postcode,
+      city: city,
+      notes: notes || null
+    };
+
+    alert("Formularz reklamacji został wysłany!\nDoręczenie kurierem pod adres: " + street + ", " + postcode + " " + city);
   }
 
   const preview = document.getElementById("submission-preview");
   const pre = document.getElementById("submitted-data-json");
 
-  pre.textContent = JSON.stringify(payload, null, 2);
-  preview.style.display = "block";
-
-  alert("Formularz reklamacji został wysłany!\nWybrany paczkomat docelowy: " + payload.paczkomat_kod + " (" + payload.paczkomat_adres + ")");
+  if (pre) pre.textContent = JSON.stringify(payload, null, 2);
+  if (preview) preview.style.display = "block";
 }

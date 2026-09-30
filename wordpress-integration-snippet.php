@@ -103,6 +103,24 @@ function inpost_reklamacja_enqueue_assets() {
             const searchBtn = document.getElementById('btn-search-city');
             const searchInput = document.getElementById('modal-search-input');
 
+            // Logika warunkowa: Paczkomat vs Kurier
+            const deliveryRadios = document.querySelectorAll('input[name=\"delivery_method\"]');
+            const paczkomatSection = document.getElementById('paczkomat-section');
+            const courierSection = document.getElementById('courier-section');
+
+            function toggleDeliveryMethod() {
+                const method = document.querySelector('input[name=\"delivery_method\"]:checked')?.value;
+                if (method === 'courier') {
+                    if (paczkomatSection) paczkomatSection.style.display = 'none';
+                    if (courierSection) courierSection.style.display = 'block';
+                } else {
+                    if (paczkomatSection) paczkomatSection.style.display = 'block';
+                    if (courierSection) courierSection.style.display = 'none';
+                }
+            }
+
+            deliveryRadios.forEach(radio => radio.addEventListener('change', toggleDeliveryMethod));
+
             function open() {
                 if (modal) modal.style.display = 'flex';
                 if (!inpostMap) {

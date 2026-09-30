@@ -57,15 +57,54 @@
           </div>
 
           <div class="divider">
-            <span>Adres odesłania naprawionego towaru</span>
+            <span>Sposób doręczenia po naprawie / wymianie</span>
           </div>
 
-          <!-- SEKCJA WYBORU PACZKOMATU -->
-          <div class="paczkomat-section">
+          <!-- WYBÓR METODY DOSTAWY ZWROTNEJ -->
+          <div class="delivery-options-grid">
+            <label class="delivery-card active" id="card-paczkomat">
+              <input type="radio" name="delivery_method" value="paczkomat" checked>
+              <div class="delivery-card-content">
+                <div class="delivery-icon-box inpost-bg">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <path d="M3 9h18M9 21V9"></path>
+                  </svg>
+                </div>
+                <div class="delivery-text">
+                  <span class="delivery-title">Paczkomat InPost 24/7</span>
+                  <span class="delivery-subtitle">Wybierz punkt z mapy, odbierz o dowolnej porze</span>
+                </div>
+                <div class="radio-indicator"></div>
+              </div>
+            </label>
+
+            <label class="delivery-card" id="card-courier">
+              <input type="radio" name="delivery_method" value="courier">
+              <div class="delivery-card-content">
+                <div class="delivery-icon-box courier-bg">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                  </svg>
+                </div>
+                <div class="delivery-text">
+                  <span class="delivery-title">Kurier pod adres</span>
+                  <span class="delivery-subtitle">Dostawa pod Twoje drzwi (dom lub firma)</span>
+                </div>
+                <div class="radio-indicator"></div>
+              </div>
+            </label>
+          </div>
+
+          <!-- SEKCJA 1: WYBÓR PACZKOMATU (aktywna przy Paczkomacie) -->
+          <div id="paczkomat-section" class="paczkomat-section">
             <div class="paczkomat-header">
               <div>
-                <label class="section-label">Dostawa zwrotna do Paczkomatu InPost *</label>
-                <p class="section-desc">Wskaż Paczkomat na mapie lub wyszukaj go po kodzie / ulicy.</p>
+                <label class="section-label">Wskaż swój Paczkomat InPost *</label>
+                <p class="section-desc">Kliknij przycisk poniżej, aby otworzyć mapę i wybrać skrytkę.</p>
               </div>
               <button type="button" id="open-inpost-btn" class="btn btn-inpost">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -76,7 +115,7 @@
               </button>
             </div>
 
-            <!-- Podgląd wybranego paczkomatu (widoczny po wyborze) -->
+            <!-- Podgląd wybranego paczkomatu -->
             <div id="selected-point-box" class="selected-point-box" style="display: none;">
               <div class="point-badge">
                 <div class="inpost-icon">InPost</div>
@@ -89,18 +128,47 @@
               <button type="button" class="btn btn-outline-sm" id="change-point-btn">Zmień</button>
             </div>
 
-            <!-- Pola formularza (te, które zapisują się w WordPressie / bazie / mailu) -->
+            <!-- Pola formularza dla Paczkomatu -->
             <div class="form-row" style="margin-top: 14px;">
               <div class="form-group col-4">
                 <label for="paczkomat_kod">Kod Paczkomatu</label>
-                <input type="text" id="paczkomat_kod" name="paczkomat_kod" placeholder="Wybierz z mapy..." readonly required>
+                <input type="text" id="paczkomat_kod" name="paczkomat_kod" placeholder="Wybierz z mapy..." readonly>
                 <small class="help-text">Wypełnia się automatycznie po kliknięciu na mapie</small>
               </div>
               <div class="form-group col-8">
                 <label for="paczkomat_adres">Dokładny adres Paczkomatu</label>
-                <input type="text" id="paczkomat_adres" name="paczkomat_adres" placeholder="Ulica, numer, kod pocztowy, miejscowość..." readonly required>
-                <small class="help-text">Adres docelowy do wygenerowania etykiety powrotnej</small>
+                <input type="text" id="paczkomat_adres" name="paczkomat_adres" placeholder="Ulica, numer, kod pocztowy, miejscowość..." readonly>
+                <small class="help-text">Adres paczkomatu do etykiety powrotnej</small>
               </div>
+            </div>
+          </div>
+
+          <!-- SEKCJA 2: ADRES DLA KURIERA (aktywna przy Kurierze) -->
+          <div id="courier-section" class="courier-section" style="display: none;">
+            <div class="courier-header">
+              <label class="section-label">Adres doręczenia dla kuriera *</label>
+              <p class="section-desc">Podaj dokładny adres, pod który kurier doręczy naprawiony sprzęt.</p>
+            </div>
+
+            <div class="form-group" style="margin-top: 14px;">
+              <label for="courier_street">Ulica i numer budynku / lokalu *</label>
+              <input type="text" id="courier_street" name="courier_street" placeholder="np. ul. Lipowa 12/4">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-4">
+                <label for="courier_postcode">Kod pocztowy *</label>
+                <input type="text" id="courier_postcode" name="courier_postcode" placeholder="00-000" maxlength="6">
+              </div>
+              <div class="form-group col-8">
+                <label for="courier_city">Miejscowość *</label>
+                <input type="text" id="courier_city" name="courier_city" placeholder="np. Warszawa">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="courier_notes">Wskazówki dla kuriera (opcjonalnie)</label>
+              <input type="text" id="courier_notes" name="courier_notes" placeholder="np. kod do domofonu 12#, 3. piętro">
             </div>
           </div>
 
