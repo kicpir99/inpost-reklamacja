@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formularz Reklamacyjny - Demo Wyboru Paczkomatu InPost</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="header">
+      <div class="logo-area">
+        <span class="badge">Środowisko Testowe</span>
+        <h1>Formularz zgłoszenia reklamacji</h1>
+        <p class="subtitle">Wzorzec integracji wyboru Paczkomatu InPost dla WordPress / WooCommerce</p>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="card form-card">
+        <div class="card-header">
+          <h2>Dane zgłoszenia serwisowego / reklamacyjnego</h2>
+          <p>Wypełnij formularz. Sprzęt po naprawie lub wymianie zostanie odesłany do wybranego Paczkomatu.</p>
+        </div>
+
+        <form id="claim-form" onsubmit="event.preventDefault(); handleSubmit();">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="order_number">Numer pierwotnego zamówienia *</label>
+              <input type="text" id="order_number" placeholder="np. #10492" required value="#12480">
+            </div>
+            <div class="form-group col-6">
+              <label for="customer_name">Imię i nazwisko *</label>
+              <input type="text" id="customer_name" placeholder="Jan Kowalski" required value="Jan Kowalski">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="customer_email">Adres e-mail *</label>
+              <input type="email" id="customer_email" placeholder="jan@example.com" required value="jan.kowalski@example.com">
+            </div>
+            <div class="form-group col-6">
+              <label for="customer_phone">Telefon kontaktowy *</label>
+              <input type="tel" id="customer_phone" placeholder="+48 600 000 000" required value="+48 601 234 567">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="issue_desc">Opis usterki / powód reklamacji *</label>
+            <textarea id="issue_desc" rows="3" placeholder="Opisz dokładnie występujący problem ze sprzętem..." required>Urządzenie wyłącza się samoczynnie po kilku minutach pracy.</textarea>
+          </div>
+
+          <div class="divider">
+            <span>Adres odesłania naprawionego towaru</span>
+          </div>
+
+          <!-- SEKCJA WYBORU PACZKOMATU -->
+          <div class="paczkomat-section">
+            <div class="paczkomat-header">
+              <div>
+                <label class="section-label">Dostawa zwrotna do Paczkomatu InPost *</label>
+                <p class="section-desc">Wskaż Paczkomat na mapie lub wyszukaj go po kodzie / ulicy.</p>
+              </div>
+              <button type="button" id="open-inpost-btn" class="btn btn-inpost">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path>
+                  <circle cx="12" cy="9" r="2.5"></circle>
+                </svg>
+                Wybierz Paczkomat z mapy
+              </button>
+            </div>
+
+            <!-- Podgląd wybranego paczkomatu (widoczny po wyborze) -->
+            <div id="selected-point-box" class="selected-point-box" style="display: none;">
+              <div class="point-badge">
+                <div class="inpost-icon">InPost</div>
+                <div class="point-details">
+                  <span class="point-name" id="display-point-name">KRA01M</span>
+                  <span class="point-address" id="display-point-address">ul. Pawia 5, 31-154 Kraków</span>
+                  <span class="point-desc" id="display-point-desc">Przy wejściu do Galerii Krakowskiej</span>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline-sm" id="change-point-btn">Zmień</button>
+            </div>
+
+            <!-- Pola formularza (te, które zapisują się w WordPressie / bazie / mailu) -->
+            <div class="form-row" style="margin-top: 14px;">
+              <div class="form-group col-4">
+                <label for="paczkomat_kod">Kod Paczkomatu</label>
+                <input type="text" id="paczkomat_kod" name="paczkomat_kod" placeholder="Wybierz z mapy..." readonly required>
+                <small class="help-text">Wypełnia się automatycznie po kliknięciu na mapie</small>
+              </div>
+              <div class="form-group col-8">
+                <label for="paczkomat_adres">Dokładny adres Paczkomatu</label>
+                <input type="text" id="paczkomat_adres" name="paczkomat_adres" placeholder="Ulica, numer, kod pocztowy, miejscowość..." readonly required>
+                <small class="help-text">Adres docelowy do wygenerowania etykiety powrotnej</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button type="submit" class="btn btn-primary">Wyślij zgłoszenie reklamacyjne</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- PRAWY PANEL: STATUS I INSTRUKCJA -->
+      <aside class="card info-card">
+        <h3>Status Integracji</h3>
+        <div class="api-status-badge">
+          <span class="status-dot"></span>
+          <span>Połączono z publicznym API InPost</span>
+        </div>
+        <p class="small-text" style="margin-top: 10px;">
+          Ta mapa pobiera <strong>rzeczywiste paczkomaty w czasie rzeczywistym</strong> bezpośrednio z oficjalnego endpointu InPost: 
+          <code>api-shipx-pl.easypack24.net/v1/points</code>.
+        </p>
+
+        <div class="instructions-summary">
+          <h4>Dlaczego to rozwiązanie jest najlepsze?</h4>
+          <ul>
+            <li><strong>Zero rejestracji i nerwów:</strong> Działa bez tokenu, bez sandboxa i bez blokad domenowych InPostu.</li>
+            <li><strong>Zawsze aktualna baza:</strong> Każdy nowy lub przeniesiony Paczkomat w Polsce jest widoczny natychmiast.</li>
+            <li><strong>Wyszukiwanie miast i ulic:</strong> Wpisz dowolną miejscowość, a mapa załaduje realne punkty z dokładnymi współrzędnymi.</li>
+          </ul>
+        </div>
+
+        <div id="submission-preview" class="submission-preview" style="display:none;">
+          <h4>Zarejestrowane dane zgłoszenia reklamacji:</h4>
+          <pre id="submitted-data-json"></pre>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- MODAL Z MAPĄ PACZKOMATÓW -->
+  <div id="inpost-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="inpost-badge-sm">InPost</div>
+          <h3>Wybierz swój Paczkomat</h3>
+        </div>
+        <button type="button" class="btn-close" id="close-modal-btn" aria-label="Zamknij">&times;</button>
+      </div>
+      
+      <!-- Wyszukiwarka i filtry w modalu -->
+      <div class="modal-search-bar">
+        <div class="search-input-wrapper">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="modal-search-input" placeholder="Wpisz miasto lub kod paczkomatu (np. Warszawa, Poznań, KRA01M)..." value="Warszawa">
+          <button type="button" id="btn-search-city" class="btn-search">Szukaj</button>
+        </div>
+        <div class="quick-cities">
+          <span class="quick-cities-label">Szybki wybór:</span>
+          <button type="button" class="city-pill" data-city="Warszawa">Warszawa</button>
+          <button type="button" class="city-pill" data-city="Kraków">Kraków</button>
+          <button type="button" class="city-pill" data-city="Wrocław">Wrocław</button>
+          <button type="button" class="city-pill" data-city="Poznań">Poznań</button>
+          <button type="button" class="city-pill" data-city="Gdańsk">Gdańsk</button>
+          <button type="button" class="city-pill" data-city="Katowice">Katowice</button>
+          <button type="button" class="city-pill" data-city="Łódź">Łódź</button>
+        </div>
+        <span id="search-status-text" class="search-status-text">Ładowanie paczkomatów...</span>
+      </div>
+
+      <div class="modal-body">
+        <div class="demo-widget-layout">
+          <div class="demo-points-list" id="demo-points-list">
+            <!-- Dynamicznie ładowana lista z InPost API -->
+          </div>
+          <div class="map-container-wrapper">
+            <div id="leaflet-map" style="width: 100%; height: 100%;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <span class="modal-footnote">Kliknij Paczkomat na mapie lub na liście, aby zatwierdzić wybór</span>
+        <button type="button" class="btn btn-secondary" id="cancel-modal-btn">Anuluj</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
