@@ -10,6 +10,7 @@
   function initHoneyInPost() {
     const form = document.querySelector('.fusion-form-2673');
     if (!form) return;
+    if (document.getElementById('honey-inpost-wrapper')) return; // Zabezpieczenie przed podwójnym uruchomieniem
 
     // Pobieramy elementy formularza Honey4Detailing wewnątrz właściwego formularza
     const radioCourier = form.querySelector('#radio-czy_pracowales_na_honey-2-0') || form.querySelector('input[value="KURIER"]');
@@ -264,18 +265,51 @@
       listEl.innerHTML = `<div style="padding: 20px; text-align: center; color: #64748b;">Szukanie paczkomatów dla "${query}"...</div>`;
 
       try {
-        // per_page=1000 pobiera wszystkie paczkomaty w danej miejscowości
+        // per_page=1000 pobiera paczkomaty w danej miejscowości
         const url = `https://api-shipx-pl.easypack24.net/v1/points?type=parcel_locker&per_page=1000&query=${encodeURIComponent(query)}`;
         const res = await fetch(url);
         const data = await res.json();
         let points = data.items || [];
 
+        // Jeśli miejscowość ma więcej niż 1000 paczkomatów (np. Warszawa ma 1660), dociągamy pozostałe strony
+        if (data.total_pages && data.total_pages > 1) {
+          const extraPromises = [];
+          for (let p = 2; p <= data.total_pages; p++) {
+            extraPromises.push(
+              fetch(`${url}&page=${p}`)
+                .then(function (r) { return r.json(); })
+                .then(function (d) { return d.items || []; })
+                .catch(function () { return []; })
+            );
+          }
+          const extraResults = await Promise.all(extraPromises);
+          extraResults.forEach(function (extraItems) {
+            points = points.concat(extraItems);
+          });
+        }
+
         // Fallback po city jeśli query nie zwróciło wyników
         if (points.length === 0) {
-          const cityRes = await fetch(`https://api-shipx-pl.easypack24.net/v1/points?type=parcel_locker&per_page=1000&city=${encodeURIComponent(query)}`);
+          const cityUrl = `https://api-shipx-pl.easypack24.net/v1/points?type=parcel_locker&per_page=1000&city=${encodeURIComponent(query)}`;
+          const cityRes = await fetch(cityUrl);
           if (cityRes.ok) {
             const cityData = await cityRes.json();
             points = cityData.items || [];
+            if (cityData.total_pages && cityData.total_pages > 1) {
+              const extraPromises = [];
+              for (let p = 2; p <= cityData.total_pages; p++) {
+                extraPromises.push(
+                  fetch(`${cityUrl}&page=${p}`)
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) { return d.items || []; })
+                    .catch(function () { return []; })
+                );
+              }
+              const extraResults = await Promise.all(extraPromises);
+              extraResults.forEach(function (extraItems) {
+                points = points.concat(extraItems);
+              });
+            }
           }
         }
 
