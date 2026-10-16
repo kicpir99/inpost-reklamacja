@@ -177,6 +177,10 @@
     function openModal() {
       modal.style.display = 'flex';
       initMap();
+      if (map) {
+        setTimeout(function () { map.invalidateSize(); }, 50);
+        setTimeout(function () { map.invalidateSize(); }, 250);
+      }
       const city = document.getElementById('honey-search-input').value.trim() || 'Wrocław';
       fetchPoints(city);
     }
@@ -184,6 +188,12 @@
     function closeModal() {
       modal.style.display = 'none';
     }
+
+    window.addEventListener('resize', function () {
+      if (map && modal.style.display === 'flex') {
+        map.invalidateSize();
+      }
+    });
 
     document.getElementById('btn-open-inpost-map').addEventListener('click', openModal);
     document.getElementById('btn-change-inpost-point').addEventListener('click', openModal);
@@ -757,6 +767,112 @@
         padding: 6px 14px;
         border-radius: 6px;
         cursor: pointer;
+      }
+
+      /* =========================================================
+         RESPONSYWNOŚĆ DLA URZĄDZEŃ MOBILNYCH (SMARTFONY I TABLETY)
+         ========================================================= */
+      @media (max-width: 768px) {
+        .honey-modal-overlay {
+          padding: 0;
+          align-items: flex-end;
+        }
+        .honey-modal-dialog {
+          width: 100%;
+          height: 100%;
+          max-height: 100vh;
+          border-radius: 0;
+        }
+        .honey-modal-header {
+          padding: 12px 14px;
+        }
+        .honey-modal-title h3 {
+          font-size: 14px;
+        }
+        .honey-modal-search {
+          padding: 8px 12px;
+          gap: 6px;
+        }
+        .honey-modal-search input {
+          font-size: 13.5px;
+          padding: 8px 10px;
+        }
+        .honey-modal-search button {
+          padding: 8px 14px;
+          font-size: 13px;
+        }
+        .honey-quick-pills {
+          padding: 6px 12px;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          gap: 6px;
+        }
+        .honey-quick-pills::-webkit-scrollbar {
+          display: none;
+        }
+        .honey-pill {
+          flex-shrink: 0;
+          padding: 4px 10px;
+          font-size: 11.5px;
+        }
+        .honey-modal-body {
+          flex-direction: column;
+          height: 100%;
+          min-height: 0;
+        }
+        .honey-map-wrapper {
+          height: 45%;
+          min-height: 180px;
+          flex: none;
+          order: 1;
+        }
+        .honey-points-sidebar {
+          width: 100%;
+          height: 55%;
+          flex: 1;
+          order: 2;
+          border-right: none;
+          border-top: 1px solid #e2e8f0;
+        }
+        .honey-point-item {
+          padding: 10px 14px;
+        }
+        .honey-modal-footer {
+          padding: 8px 14px;
+          font-size: 11px;
+        }
+        .honey-btn-cancel {
+          padding: 5px 10px;
+          font-size: 11.5px;
+        }
+
+        /* Formularz na telefonie */
+        #honey-inpost-wrapper {
+          width: 100%;
+        }
+        .honey-btn-inpost {
+          width: 100%;
+          justify-content: center;
+          padding: 12px 16px;
+          font-size: 14px;
+        }
+        .honey-point-card {
+          width: 100%;
+          max-width: 100%;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 12px 14px;
+        }
+        .honey-point-card .honey-point-info {
+          width: 100%;
+        }
+        .honey-btn-change {
+          width: 100%;
+          text-align: center;
+          padding: 8px 12px;
+        }
       }
     `;
     document.head.appendChild(style);
