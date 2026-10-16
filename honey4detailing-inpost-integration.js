@@ -234,10 +234,12 @@
       const city = addr.city || '';
       const fullAddress = `${street} ${bNum}, ${pCode} ${city}`.trim();
 
+      const flatNum = addr.flat_number || '-';
+
       // 1. Podstawienie do pól Avada Formularza
       if (inputs.inputUlica) setInputValue(inputs.inputUlica, `Paczkomat ${point.name} - ${street}`);
       if (inputs.inputNrDomu) setInputValue(inputs.inputNrDomu, bNum || '1');
-      if (inputs.inputNrLokalu) setInputValue(inputs.inputNrLokalu, '-'); // Zapobiega błędom required Avady
+      if (inputs.inputNrLokalu) setInputValue(inputs.inputNrLokalu, flatNum); // Używa numeru lokalu z API lub myślnika, spełniając required Avady
       if (inputs.inputKodPocztowy) setInputValue(inputs.inputKodPocztowy, pCode);
       if (inputs.inputMiasto) setInputValue(inputs.inputMiasto, city);
 
