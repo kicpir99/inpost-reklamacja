@@ -11,15 +11,15 @@
     const form = document.querySelector('.fusion-form-2673');
     if (!form) return;
 
-    // Pobieramy elementy formularza Honey4Detailing
-    const radioCourier = document.getElementById('radio-czy_pracowales_na_honey-2-0');
-    const radioPaczkomat = document.getElementById('radio-czy_pracowales_na_honey-2-1');
+    // Pobieramy elementy formularza Honey4Detailing wewnątrz właściwego formularza
+    const radioCourier = form.querySelector('#radio-czy_pracowales_na_honey-2-0') || form.querySelector('input[value="KURIER"]');
+    const radioPaczkomat = form.querySelector('#radio-czy_pracowales_na_honey-2-1') || form.querySelector('input[value="PACZKOMAT"]');
 
-    const inputUlica = document.getElementById('ulica');
-    const inputNrDomu = document.getElementById('Nr_Domu');
-    const inputNrLokalu = document.getElementById('Nr_lokalu');
-    const inputKodPocztowy = document.getElementById('KodPocztowy');
-    const inputMiasto = document.getElementById('Miasto');
+    const inputUlica = form.querySelector('#ulica') || form.querySelector('[name="ulica"]');
+    const inputNrDomu = form.querySelector('#Nr_Domu') || form.querySelector('[name="Nr_Domu"]');
+    const inputNrLokalu = form.querySelector('#Nr_lokalu') || form.querySelector('[name="Nr_lokalu"]');
+    const inputKodPocztowy = form.querySelector('#KodPocztowy') || form.querySelector('[name="KodPocztowy"]');
+    const inputMiasto = form.querySelector('#Miasto') || form.querySelector('[name="Miasto"]');
 
     if (!radioPaczkomat) return;
 
@@ -63,6 +63,16 @@
     s.src = src;
     s.onload = cb;
     document.body.appendChild(s);
+  }
+
+  // Bezpieczne ustawianie wartości pól w Avada Forms (z wywołaniem zdarzeń)
+  function setInputValue(input, val) {
+    if (!input) return;
+    input.value = val;
+    input.setAttribute('value', val);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new Event('blur', { bubbles: true }));
   }
 
   // Budowa interfejsu przycisku i modalu
@@ -114,15 +124,15 @@
         </div>
 
         <div class="honey-modal-search">
-          <input type="text" id="honey-search-input" placeholder="Wpisz miasto lub kod paczkomatu (np. Warszawa, Poznań, WAW22A)..." value="Warszawa">
+          <input type="text" id="honey-search-input" placeholder="Wpisz miasto lub kod paczkomatu (np. Wrocław, Warszawa, KRA01M)..." value="Wrocław">
           <button type="button" id="honey-search-btn">Szukaj</button>
         </div>
 
         <div class="honey-quick-pills">
           <span>Szybki wybór:</span>
+          <button type="button" class="honey-pill" data-city="Wrocław">Wrocław</button>
           <button type="button" class="honey-pill" data-city="Warszawa">Warszawa</button>
           <button type="button" class="honey-pill" data-city="Kraków">Kraków</button>
-          <button type="button" class="honey-pill" data-city="Wrocław">Wrocław</button>
           <button type="button" class="honey-pill" data-city="Poznań">Poznań</button>
           <button type="button" class="honey-pill" data-city="Gdańsk">Gdańsk</button>
           <button type="button" class="honey-pill" data-city="Katowice">Katowice</button>
@@ -158,7 +168,7 @@
     function openModal() {
       modal.style.display = 'flex';
       initMap();
-      const city = document.getElementById('honey-search-input').value.trim() || 'Warszawa';
+      const city = document.getElementById('honey-search-input').value.trim() || 'Wrocław';
       fetchPoints(city);
     }
 
@@ -180,17 +190,16 @@
       radio.addEventListener('change', function () {
         if (radioPaczkomat.checked) {
           inpostWrapper.style.display = 'block';
-          // Opcjonalnie otwórz mapę od razu po kliknięciu w PACZKOMAT
           openModal();
         } else {
           inpostWrapper.style.display = 'none';
           // Przywrócenie możliwości ręcznego wpisania adresu dla kuriera
           if (inputs.inputUlica && inputs.inputUlica.value.startsWith('Paczkomat')) {
-            inputs.inputUlica.value = '';
-            if (inputs.inputNrDomu) inputs.inputNrDomu.value = '';
-            if (inputs.inputNrLokalu) inputs.inputNrLokalu.value = '';
-            if (inputs.inputKodPocztowy) inputs.inputKodPocztowy.value = '';
-            if (inputs.inputMiasto) inputs.inputMiasto.value = '';
+            setInputValue(inputs.inputUlica, '');
+            setInputValue(inputs.inputNrDomu, '');
+            setInputValue(inputs.inputNrLokalu, '');
+            setInputValue(inputs.inputKodPocztowy, '');
+            setInputValue(inputs.inputMiasto, '');
           }
         }
       });
@@ -205,14 +214,20 @@
       const city = addr.city || '';
       const fullAddress = `${street} ${bNum}, ${pCode} ${city}`.trim();
 
-      // Podstawienie do pól Avada Formularza
-      if (inputs.inputUlica) inputs.inputUlica.value = `Paczkomat ${point.name} - ${street}`;
-      if (inputs.inputNrDomu) inputs.inputNrDomu.value = bNum || '-';
-      if (inputs.inputNrLokalu) inputs.inputNrLokalu.value = '-'; // Zabezpieczenie przed błędem walidacji required Avady
-      if (inputs.inputKodPocztowy) inputs.inputKodPocztowy.value = pCode;
-      if (inputs.inputMiasto) inputs.inputMiasto.value = city;
+      // 1. Podstawienie do pól Avada Formularza
+      if (inputs.inputUlica) setInputValue(inputs.inputUlica, `Paczkomat ${point.name} - ${street}`);
+      if (inputs.inputNrDomu) setInputValue(inputs.inputNrDomu, bNum || '1');
+      if (inputs.inputNrLokalu) setInputValue(inputs.inputNrLokalu, '-'); // Zapobiega błędom required Avady
+      if (inputs.inputKodPocztowy) setInputValue(inputs.inputKodPocztowy, pCode);
+      if (inputs.inputMiasto) setInputValue(inputs.inputMiasto, city);
 
-      // Pokazanie badge'a wybranego paczkomatu
+      // 2. Podstawienie obu pól Krajzakupu (kraj zakupu oraz kraj w adresie) na Polska
+      const krajInputs = form.querySelectorAll('[name="Krajzakupu"]');
+      krajInputs.forEach(function (inp) {
+        setInputValue(inp, 'Polska');
+      });
+
+      // 3. Pokazanie badge'a wybranego paczkomatu
       document.getElementById('honey-point-name').textContent = point.name;
       document.getElementById('honey-point-addr').textContent = fullAddress;
       document.getElementById('honey-selected-paczkomat').style.display = 'flex';
@@ -224,7 +239,7 @@
     function initMap() {
       if (!window.L) return;
       if (!map) {
-        map = L.map('honey-leaflet-map').setView([52.2297, 21.0122], 12);
+        map = L.map('honey-leaflet-map').setView([51.1079, 17.0385], 12);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 18,
           attribution: '&copy; Esri & InPost'
@@ -235,18 +250,28 @@
       setTimeout(function () { if (map) map.invalidateSize(); }, 300);
     }
 
-    // Pobieranie paczkomatów z publicznego API InPost
+    // Pobieranie paczkomatów z publicznego API InPost (per_page=1000 pobiera całe miasto!)
     async function fetchPoints(query) {
       const listEl = document.getElementById('honey-points-list');
       listEl.innerHTML = `<div style="padding: 20px; text-align: center; color: #64748b;">Szukanie paczkomatów dla "${query}"...</div>`;
 
       try {
-        const url = `https://api-shipx-pl.easypack24.net/v1/points?type=parcel_locker&limit=30&query=${encodeURIComponent(query)}`;
+        // per_page=1000 pobiera wszystkie paczkomaty w danej miejscowości
+        const url = `https://api-shipx-pl.easypack24.net/v1/points?type=parcel_locker&per_page=1000&query=${encodeURIComponent(query)}`;
         const res = await fetch(url);
         const data = await res.json();
-        const points = data.items || [];
-        currentPoints = points;
+        let points = data.items || [];
 
+        // Fallback po city jeśli query nie zwróciło wyników
+        if (points.length === 0) {
+          const cityRes = await fetch(`https://api-shipx-pl.easypack24.net/v1/points?type=parcel_locker&per_page=1000&city=${encodeURIComponent(query)}`);
+          if (cityRes.ok) {
+            const cityData = await cityRes.json();
+            points = cityData.items || [];
+          }
+        }
+
+        currentPoints = points;
         renderSidebar(points);
         renderMarkers(points);
       } catch (e) {
@@ -264,7 +289,17 @@
         return;
       }
 
-      points.forEach(function (pt) {
+      // Nagłówek licznika punktów
+      const countHeader = document.createElement('div');
+      countHeader.className = 'honey-count-header';
+      countHeader.textContent = `Znaleziono ${points.length} Paczkomatów InPost`;
+      listEl.appendChild(countHeader);
+
+      // Renderujemy punkty na liście (do 150 sztuk dla pełnej płynności przewijania)
+      const renderLimit = Math.min(points.length, 150);
+
+      for (let i = 0; i < renderLimit; i++) {
+        const pt = points[i];
         const addr = pt.address_details || pt.address || {};
         const item = document.createElement('div');
         item.className = 'honey-point-item';
@@ -277,10 +312,20 @@
           <div style="font-size:11px; color:#64748b; margin-top:2px;">${pt.location_description || 'Paczkomat InPost'}</div>
         `;
         item.addEventListener('click', function () {
+          if (map && pt.location) {
+            map.setView([pt.location.latitude, pt.location.longitude], 16);
+          }
           selectPoint(pt);
         });
         listEl.appendChild(item);
-      });
+      }
+
+      if (points.length > 150) {
+        const moreInfo = document.createElement('div');
+        moreInfo.style.cssText = 'padding: 10px; font-size: 11px; color: #64748b; text-align: center;';
+        moreInfo.textContent = `...oraz ${points.length - 150} kolejnych (wszystkie widoczne na mapie)`;
+        listEl.appendChild(moreInfo);
+      }
     }
 
     function renderMarkers(points) {
@@ -306,10 +351,10 @@
         const fullAddr = `${addr.street || ''} ${addr.building_number || ''}, ${addr.city || ''}`;
 
         marker.bindPopup(`
-          <div style="font-family: inherit; font-size:13px;">
+          <div style="font-family: inherit; font-size:13px; min-width: 180px;">
             <div style="font-weight:700; font-size:14px; margin-bottom:4px;">${pt.name}</div>
             <div>${fullAddr}</div>
-            <div style="font-size:11px; color:#64748b; margin: 4px 0 8px;">${pt.location_description || ''}</div>
+            <div style="font-size:11px; color:#64748b; margin: 4px 0 8px;">${pt.location_description || 'Czynny 24/7'}</div>
             <button type="button" class="honey-btn-select-popup" id="honey-popup-${pt.name}">Wybierz ten Paczkomat</button>
           </div>
         `);
@@ -548,6 +593,14 @@
         border-right: 1px solid #e2e8f0;
         overflow-y: auto;
         background: #fff;
+      }
+      .honey-count-header {
+        padding: 8px 16px;
+        background: #f1f5f9;
+        font-size: 12px;
+        font-weight: 700;
+        color: #334155;
+        border-bottom: 1px solid #e2e8f0;
       }
       .honey-point-item {
         padding: 12px 16px;
