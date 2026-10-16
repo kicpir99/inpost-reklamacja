@@ -93,15 +93,15 @@
     inpostWrapper.id = 'honey-inpost-wrapper';
     inpostWrapper.style.display = radioPaczkomat.checked ? 'block' : 'none';
     inpostWrapper.innerHTML = `
-      <div class="honey-inpost-action-bar">
+      <div id="honey-inpost-action-bar" class="honey-inpost-action-bar">
         <button type="button" id="btn-open-inpost-map" class="honey-btn-inpost">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path>
             <circle cx="12" cy="9" r="2.5"></circle>
           </svg>
           Wybierz Paczkomat z mapy
         </button>
-        <span class="honey-inpost-hint">Wskaż Paczkomat, do którego ma zostać odesłana reklamacja</span>
+        <span class="honey-inpost-hint">Wskaż Paczkomat odbioru reklamacji</span>
       </div>
 
       <div id="honey-selected-paczkomat" class="honey-point-card" style="display: none;">
@@ -110,7 +110,7 @@
           <strong id="honey-point-name">KRA01M</strong>
           <span id="honey-point-addr">ul. Pawia 5, Kraków</span>
         </div>
-        <button type="button" class="honey-btn-change" id="btn-change-inpost-point">Zmień</button>
+        <button type="button" class="honey-btn-change" id="btn-change-inpost-point">Zmień paczkomat</button>
       </div>
     `;
 
@@ -197,11 +197,22 @@
     const allRadios = form.querySelectorAll('input[name="czy_pracowales_na_honey"]');
     allRadios.forEach(function (radio) {
       radio.addEventListener('change', function () {
+        const actBar = document.getElementById('honey-inpost-action-bar');
+        const selCard = document.getElementById('honey-selected-paczkomat');
+
         if (radioPaczkomat.checked) {
           inpostWrapper.style.display = 'block';
-          openModal();
+          if (selCard && selCard.style.display === 'flex') {
+            if (actBar) actBar.style.display = 'none';
+          } else {
+            if (actBar) actBar.style.display = 'flex';
+            openModal();
+          }
         } else {
           inpostWrapper.style.display = 'none';
+          if (actBar) actBar.style.display = 'flex';
+          if (selCard) selCard.style.display = 'none';
+
           // Przywrócenie możliwości ręcznego wpisania adresu dla kuriera
           if (inputs.inputUlica && inputs.inputUlica.value.startsWith('Paczkomat')) {
             setInputValue(inputs.inputUlica, '');
@@ -236,10 +247,14 @@
         setInputValue(inp, 'Polska');
       });
 
-      // 3. Pokazanie badge'a wybranego paczkomatu
+      // 3. Pokazanie karty wybranego paczkomatu i ukrycie dużego przycisku
       document.getElementById('honey-point-name').textContent = point.name;
       document.getElementById('honey-point-addr').textContent = fullAddress;
-      document.getElementById('honey-selected-paczkomat').style.display = 'flex';
+
+      const actBar = document.getElementById('honey-inpost-action-bar');
+      const selCard = document.getElementById('honey-selected-paczkomat');
+      if (actBar) actBar.style.display = 'none';
+      if (selCard) selCard.style.display = 'flex';
 
       closeModal();
     }
@@ -438,60 +453,81 @@
     });
   }
 
-  // Wstrzykiwanie styli CSS dla Honey4Detailing
+  // Wstrzykiwanie styli CSS dla Honey4Detailing (akcent: #f79428, tło ciemnego motywu: #212326)
   function injectStyles() {
     const style = document.createElement('style');
     style.innerHTML = `
+      /* Wyrównanie wiersza Avady aby 'Preferowana forma wysyłki:' i opcje były w jednej linii */
+      .fusion-builder-nested-column-24,
+      .fusion-builder-nested-column-25 {
+        align-self: flex-start !important;
+      }
+      .fusion-builder-nested-column-24 .fusion-text p {
+        margin-top: 2px !important;
+      }
+
+      #honey-inpost-wrapper {
+        margin-top: 10px;
+        width: 100%;
+      }
       .honey-inpost-action-bar {
         display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 14px 0;
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        margin: 8px 0;
       }
       .honey-btn-inpost {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: #ffcc00;
-        color: #111;
+        background: #f79428;
+        color: #ffffff;
         font-weight: 700;
         font-size: 13.5px;
-        padding: 9px 18px;
+        padding: 10px 18px;
         border-radius: 6px;
         border: none;
         cursor: pointer;
-        transition: transform 0.15s, background 0.15s;
-        box-shadow: 0 2px 6px rgba(255, 204, 0, 0.4);
+        transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 4px 14px rgba(247, 148, 40, 0.35);
       }
       .honey-btn-inpost:hover {
-        background: #e6b800;
+        background: #e68318;
         transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(247, 148, 40, 0.5);
       }
       .honey-inpost-hint {
-        font-size: 13px;
+        font-size: 12px;
         color: #94a3b8;
       }
       .honey-point-card {
-        background: #1e293b;
-        border: 1.5px solid #ffcc00;
-        color: #fff;
+        background: #212326;
+        border: 1px solid rgba(247, 148, 40, 0.45);
+        color: #ffffff;
         border-radius: 8px;
         padding: 12px 16px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 14px;
-        max-width: 500px;
+        gap: 14px;
+        margin-top: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+        width: 100%;
+        max-width: 480px;
+        transition: border-color 0.2s;
+      }
+      .honey-point-card:hover {
+        border-color: #f79428;
       }
       .honey-point-badge {
-        background: #ffcc00;
-        color: #000;
+        background: #f79428;
+        color: #141617;
         font-weight: 800;
         font-size: 11px;
         padding: 4px 8px;
         border-radius: 4px;
+        letter-spacing: 0.5px;
       }
       .honey-point-info {
         display: flex;
@@ -499,32 +535,37 @@
         flex: 1;
       }
       .honey-point-info strong {
-        font-size: 14px;
-        color: #ffcc00;
+        font-size: 14.5px;
+        color: #f79428;
+        letter-spacing: 0.3px;
       }
       .honey-point-info span {
-        font-size: 12.5px;
+        font-size: 12px;
         color: #cbd5e1;
+        margin-top: 2px;
       }
       .honey-btn-change {
-        background: transparent;
-        border: 1px solid #64748b;
-        color: #e2e8f0;
-        padding: 4px 10px;
+        background: rgba(247, 148, 40, 0.12);
+        border: 1px solid #f79428;
+        color: #f79428;
+        padding: 5px 12px;
         font-size: 12px;
-        border-radius: 4px;
+        font-weight: 600;
+        border-radius: 5px;
         cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
       }
       .honey-btn-change:hover {
-        border-color: #ffcc00;
-        color: #ffcc00;
+        background: #f79428;
+        color: #141617;
       }
 
       /* Modal */
       .honey-modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(15, 23, 42, 0.75);
+        background: rgba(15, 23, 42, 0.8);
         backdrop-filter: blur(4px);
         z-index: 999999;
         display: flex;
@@ -543,7 +584,7 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
       }
       .honey-modal-header {
         padding: 14px 20px;
@@ -558,8 +599,8 @@
         gap: 10px;
       }
       .honey-logo-inpost {
-        background: #ffcc00;
-        color: #000;
+        background: #f79428;
+        color: #141617;
         font-weight: 800;
         font-size: 11px;
         padding: 4px 8px;
@@ -593,12 +634,17 @@
         font-size: 13.5px;
       }
       .honey-modal-search button {
-        background: #ffcc00;
+        background: #f79428;
+        color: #ffffff;
         border: none;
-        padding: 8px 16px;
+        padding: 8px 18px;
         font-weight: 700;
         border-radius: 6px;
         cursor: pointer;
+        transition: background 0.15s;
+      }
+      .honey-modal-search button:hover {
+        background: #e68318;
       }
       .honey-quick-pills {
         padding: 8px 20px;
@@ -617,11 +663,12 @@
         border-radius: 20px;
         font-size: 11.5px;
         cursor: pointer;
+        transition: all 0.15s;
       }
       .honey-pill:hover {
-        background: #ffcc00;
-        border-color: #ffcc00;
-        color: #000;
+        background: #f79428;
+        border-color: #f79428;
+        color: #ffffff;
       }
       .honey-modal-body {
         flex: 1;
@@ -651,11 +698,11 @@
         transition: background 0.15s;
       }
       .honey-point-item:hover {
-        background: #fffdf5;
+        background: #fff7ed;
       }
       .honey-badge-small {
-        background: #ffcc00;
-        color: #000;
+        background: #f79428;
+        color: #ffffff;
         font-size: 10px;
         font-weight: 700;
         padding: 2px 5px;
@@ -667,17 +714,17 @@
         height: 100%;
       }
       .honey-inpost-marker {
-        background: #ffcc00;
-        border: 2px solid #000;
-        color: #000;
+        background: #f79428;
+        border: 2px solid #141617;
+        color: #141617;
         font-weight: 800;
         font-size: 11px;
         padding: 2px 6px;
         border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
       }
       .honey-btn-select-popup {
-        background: #111;
+        background: #141617;
         color: #fff;
         border: none;
         padding: 6px 12px;
@@ -687,10 +734,11 @@
         cursor: pointer;
         width: 100%;
         margin-top: 4px;
+        transition: background 0.15s;
       }
       .honey-btn-select-popup:hover {
-        background: #ffcc00;
-        color: #000;
+        background: #f79428;
+        color: #141617;
       }
       .honey-modal-footer {
         padding: 12px 20px;
