@@ -15,11 +15,11 @@
     const radioCourier = form.querySelector('#radio-czy_pracowales_na_honey-2-0') || form.querySelector('input[value="KURIER"]');
     const radioPaczkomat = form.querySelector('#radio-czy_pracowales_na_honey-2-1') || form.querySelector('input[value="PACZKOMAT"]');
 
-    const inputUlica = form.querySelector('#ulica') || form.querySelector('[name="ulica"]');
-    const inputNrDomu = form.querySelector('#Nr_Domu') || form.querySelector('[name="Nr_Domu"]');
-    const inputNrLokalu = form.querySelector('#Nr_lokalu') || form.querySelector('[name="Nr_lokalu"]');
-    const inputKodPocztowy = form.querySelector('#KodPocztowy') || form.querySelector('[name="KodPocztowy"]');
-    const inputMiasto = form.querySelector('#Miasto') || form.querySelector('[name="Miasto"]');
+    const inputUlica = form.querySelector('#ulica, [name="ulica"]');
+    const inputNrDomu = form.querySelector('#Nr_Domu, [name="Nr_Domu"], #NrDomu, [name="NrDomu"]');
+    const inputNrLokalu = form.querySelector('#Nr_lokalu, [name="Nr_lokalu"], #Nrlokalu, [name="Nrlokalu"]');
+    const inputKodPocztowy = form.querySelector('#Kod_Pocztowy, [name="Kod_Pocztowy"], #KodPocztowy, [name="KodPocztowy"], input[placeholder*="Kod pocztowy"]');
+    const inputMiasto = form.querySelector('#Miasto, [name="Miasto"]');
 
     if (!radioPaczkomat) return;
 
@@ -65,11 +65,19 @@
     document.body.appendChild(s);
   }
 
-  // Bezpieczne ustawianie wartości pól w Avada Forms (z wywołaniem zdarzeń)
+  // Bezpieczne ustawianie wartości pól w Avada Forms (z wywołaniem zdarzeń i wsparciem jQuery)
   function setInputValue(input, val) {
     if (!input) return;
     input.value = val;
     input.setAttribute('value', val);
+
+    // Jeśli WordPress / Avada posiada załadowany jQuery
+    if (window.jQuery) {
+      try {
+        window.jQuery(input).val(val).trigger('change').trigger('input');
+      } catch (e) {}
+    }
+
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
     input.dispatchEvent(new Event('blur', { bubbles: true }));
@@ -221,8 +229,8 @@
       if (inputs.inputKodPocztowy) setInputValue(inputs.inputKodPocztowy, pCode);
       if (inputs.inputMiasto) setInputValue(inputs.inputMiasto, city);
 
-      // 2. Podstawienie obu pól Krajzakupu (kraj zakupu oraz kraj w adresie) na Polska
-      const krajInputs = form.querySelectorAll('[name="Krajzakupu"]');
+      // 2. Podstawienie obu pól Kraj_zakupu (kraj zakupu oraz kraj w adresie dostawy) na Polska
+      const krajInputs = form.querySelectorAll('#Kraj_zakupu, [name="Kraj_zakupu"], #Krajzakupu, [name="Krajzakupu"], input[placeholder*="Kraj"]');
       krajInputs.forEach(function (inp) {
         setInputValue(inp, 'Polska');
       });
