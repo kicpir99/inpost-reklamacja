@@ -13,14 +13,14 @@
     if (document.getElementById('honey-inpost-wrapper')) return; // Zabezpieczenie przed podwójnym uruchomieniem
 
     // Pobieramy elementy formularza Honey4Detailing wewnątrz właściwego formularza
-    const radioCourier = form.querySelector('#radio-czy_pracowales_na_honey-2-0, input[value="KURIER"]');
-    const radioPaczkomat = form.querySelector('#radio-czy_pracowales_na_honey-2-1, input[value="PACZKOMAT"]');
+    const radioCourier = form.querySelector('#radio-kurier_czy_paczkomat-2-0, #radio-czy_pracowales_na_honey-2-0, input[value="KURIER"]');
+    const radioPaczkomat = form.querySelector('#radio-kurier_czy_paczkomat-2-1, #radio-czy_pracowales_na_honey-2-1, input[value="PACZKOMAT"]');
 
     if (!radioPaczkomat) return;
 
-    // Rozdzielenie grupy 'Kupione jako' (KONSUMENT/FIRMA) od 'Preferowana forma wysyłki' (KURIER/PACZKOMAT)
-    // w przypadku gdy w Avada Form Builder oba pola otrzymały tę samą nazwę 'czy_pracowales_na_honey'.
-    const buyerRadios = form.querySelectorAll('input[value="KONSUMENT"], input[value="FIRMA"], #radio-czy_pracowales_na_honey-3-0, #radio-czy_pracowales_na_honey-3-1');
+    // Dodatkowe zabezpieczenie: upewniamy się, że grupa 'Kupione jako' (KONSUMENT/FIRMA)
+    // ma zawsze inną nazwę niż 'Preferowana forma wysyłki' (KURIER/PACZKOMAT)
+    const buyerRadios = form.querySelectorAll('input[value="KONSUMENT"], input[value="FIRMA"], #radio-kosument_czy_firma-3-0, #radio-kosument_czy_firma-3-1, #radio-czy_pracowales_na_honey-3-0, #radio-czy_pracowales_na_honey-3-1');
     buyerRadios.forEach(function (radio) {
       if (radio && radio.name === radioPaczkomat.name) {
         radio.name = 'kupione_jako';
