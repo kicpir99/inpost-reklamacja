@@ -95,12 +95,13 @@
 
   // Budowa interfejsu przycisku i modalu
   function buildInPostUI(form, radioPaczkomat, radioCourier, inputs) {
-    // 1. Kontener na przycisk i podgląd paczkomatu wstawiony zaraz pod radiem
+    // 1. Kontener na przycisk i podgląd paczkomatu wstawiony po całym wierszu opcji dostawy
     const radioContainer = radioPaczkomat.closest('.fusion-form-radio-field') || radioPaczkomat.parentElement;
-    
+    const radioRow = radioPaczkomat.closest('.fusion-builder-row-inner') || radioPaczkomat.closest('.fusion-builder-row') || radioContainer;
+
     const inpostWrapper = document.createElement('div');
     inpostWrapper.id = 'honey-inpost-wrapper';
-    inpostWrapper.style.display = radioPaczkomat.checked ? 'block' : 'none';
+    inpostWrapper.style.display = radioPaczkomat.checked ? 'flex' : 'none';
     inpostWrapper.innerHTML = `
       <div id="honey-inpost-action-bar" class="honey-inpost-action-bar">
         <button type="button" id="btn-open-inpost-map" class="honey-btn-inpost">
@@ -123,8 +124,8 @@
       </div>
     `;
 
-    // Wstawienie pod opcjami wyboru
-    radioContainer.parentNode.insertBefore(inpostWrapper, radioContainer.nextSibling);
+    // Wstawienie jako wycentrowany blok zaraz pod całym wierszem wyboru dostawy
+    radioRow.parentNode.insertBefore(inpostWrapper, radioRow.nextSibling);
 
     // 2. Wstawienie modalu na koniec body
     const modal = document.createElement('div');
@@ -220,7 +221,7 @@
         const selCard = document.getElementById('honey-selected-paczkomat');
 
         if (radioPaczkomat && radioPaczkomat.checked) {
-          inpostWrapper.style.display = 'block';
+          inpostWrapper.style.display = 'flex';
           if (selCard && selCard.style.display === 'flex') {
             if (actBar) actBar.style.display = 'none';
           } else {
@@ -478,35 +479,31 @@
   function injectStyles() {
     const style = document.createElement('style');
     style.innerHTML = `
-      /* Wyrównanie wiersza Avady i zapewnienie odpowiedniej szerokości na kafelek paczkomatu */
-      .fusion-builder-nested-column-24 {
-        align-self: flex-start !important;
+      /* Wyrównanie wiersza dostawy Avady */
+      .fusion-builder-nested-column-24,
+      .fusion-builder-nested-column-25 {
+        align-self: center !important;
       }
       .fusion-builder-nested-column-24 .fusion-text p {
-        margin-top: 2px !important;
-      }
-      .fusion-builder-nested-column-25 {
-        align-self: flex-start !important;
-        --awb-width-large: 60% !important;
-        --awb-width-medium: 60% !important;
-        width: auto !important;
-        min-width: 380px !important;
-        max-width: 65% !important;
-        flex: 1 1 auto !important;
+        margin: 0 !important;
       }
 
+      /* Wycentrowany kontener InPost wstawiony pomiędzy wierszami */
       #honey-inpost-wrapper {
-        margin-top: 10px;
+        margin: 14px 0 16px 0;
         width: 100%;
-        min-width: 360px;
-        max-width: 540px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
       }
       .honey-inpost-action-bar {
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
+        text-align: center;
         gap: 6px;
-        margin: 8px 0;
+        margin: 6px auto;
       }
       .honey-btn-inpost {
         display: inline-flex;
@@ -516,7 +513,7 @@
         color: #ffffff;
         font-weight: 700;
         font-size: 13.5px;
-        padding: 10px 18px;
+        padding: 10px 20px;
         border-radius: 6px;
         border: none;
         cursor: pointer;
@@ -537,16 +534,15 @@
         border: 1px solid rgba(247, 148, 40, 0.45);
         color: #ffffff;
         border-radius: 8px;
-        padding: 14px 18px;
+        padding: 14px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        margin-top: 8px;
+        gap: 18px;
+        margin: 6px auto;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
         width: 100%;
-        min-width: 360px;
-        max-width: 520px;
+        max-width: 580px;
         box-sizing: border-box;
         transition: border-color 0.2s;
       }
