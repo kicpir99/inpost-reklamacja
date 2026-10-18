@@ -478,18 +478,28 @@
   function injectStyles() {
     const style = document.createElement('style');
     style.innerHTML = `
-      /* Wyrównanie wiersza Avady aby 'Preferowana forma wysyłki:' i opcje były w jednej linii */
-      .fusion-builder-nested-column-24,
-      .fusion-builder-nested-column-25 {
+      /* Wyrównanie wiersza Avady i zapewnienie odpowiedniej szerokości na kafelek paczkomatu */
+      .fusion-builder-nested-column-24 {
         align-self: flex-start !important;
       }
       .fusion-builder-nested-column-24 .fusion-text p {
         margin-top: 2px !important;
       }
+      .fusion-builder-nested-column-25 {
+        align-self: flex-start !important;
+        --awb-width-large: 60% !important;
+        --awb-width-medium: 60% !important;
+        width: auto !important;
+        min-width: 380px !important;
+        max-width: 65% !important;
+        flex: 1 1 auto !important;
+      }
 
       #honey-inpost-wrapper {
         margin-top: 10px;
         width: 100%;
+        min-width: 360px;
+        max-width: 540px;
       }
       .honey-inpost-action-bar {
         display: flex;
@@ -527,15 +537,17 @@
         border: 1px solid rgba(247, 148, 40, 0.45);
         color: #ffffff;
         border-radius: 8px;
-        padding: 12px 16px;
+        padding: 14px 18px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 14px;
+        gap: 16px;
         margin-top: 8px;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
         width: 100%;
-        max-width: 480px;
+        min-width: 360px;
+        max-width: 520px;
+        box-sizing: border-box;
         transition: border-color 0.2s;
       }
       .honey-point-card:hover {
@@ -546,36 +558,41 @@
         color: #141617;
         font-weight: 800;
         font-size: 11px;
-        padding: 4px 8px;
+        padding: 5px 9px;
         border-radius: 4px;
         letter-spacing: 0.5px;
+        flex-shrink: 0;
       }
       .honey-point-info {
         display: flex;
         flex-direction: column;
-        flex: 1;
+        flex: 1 1 auto;
+        min-width: 160px;
       }
       .honey-point-info strong {
-        font-size: 14.5px;
+        font-size: 15px;
         color: #f79428;
         letter-spacing: 0.3px;
+        line-height: 1.2;
       }
       .honey-point-info span {
-        font-size: 12px;
+        font-size: 12.5px;
         color: #cbd5e1;
-        margin-top: 2px;
+        margin-top: 3px;
+        line-height: 1.4;
       }
       .honey-btn-change {
         background: rgba(247, 148, 40, 0.12);
         border: 1px solid #f79428;
         color: #f79428;
-        padding: 5px 12px;
+        padding: 6px 14px;
         font-size: 12px;
         font-weight: 600;
-        border-radius: 5px;
+        border-radius: 6px;
         cursor: pointer;
         transition: all 0.15s ease;
         white-space: nowrap;
+        flex-shrink: 0;
       }
       .honey-btn-change:hover {
         background: #f79428;
@@ -857,8 +874,15 @@
         }
 
         /* Formularz na telefonie */
+        .fusion-builder-nested-column-25 {
+          min-width: 0 !important;
+          max-width: 100% !important;
+          width: 100% !important;
+        }
         #honey-inpost-wrapper {
-          width: 100%;
+          min-width: 0 !important;
+          max-width: 100% !important;
+          width: 100% !important;
         }
         .honey-btn-inpost {
           width: 100%;
@@ -867,8 +891,9 @@
           font-size: 14px;
         }
         .honey-point-card {
-          width: 100%;
-          max-width: 100%;
+          width: 100% !important;
+          min-width: 0 !important;
+          max-width: 100% !important;
           flex-direction: column;
           align-items: flex-start;
           gap: 10px;
