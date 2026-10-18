@@ -13,16 +13,25 @@
     if (document.getElementById('honey-inpost-wrapper')) return; // Zabezpieczenie przed podwójnym uruchomieniem
 
     // Pobieramy elementy formularza Honey4Detailing wewnątrz właściwego formularza
-    const radioCourier = form.querySelector('#radio-czy_pracowales_na_honey-2-0') || form.querySelector('input[value="KURIER"]');
-    const radioPaczkomat = form.querySelector('#radio-czy_pracowales_na_honey-2-1') || form.querySelector('input[value="PACZKOMAT"]');
+    const radioCourier = form.querySelector('#radio-czy_pracowales_na_honey-2-0, input[value="KURIER"]');
+    const radioPaczkomat = form.querySelector('#radio-czy_pracowales_na_honey-2-1, input[value="PACZKOMAT"]');
+
+    if (!radioPaczkomat) return;
+
+    // Rozdzielenie grupy 'Kupione jako' (KONSUMENT/FIRMA) od 'Preferowana forma wysyłki' (KURIER/PACZKOMAT)
+    // w przypadku gdy w Avada Form Builder oba pola otrzymały tę samą nazwę 'czy_pracowales_na_honey'.
+    const buyerRadios = form.querySelectorAll('input[value="KONSUMENT"], input[value="FIRMA"], #radio-czy_pracowales_na_honey-3-0, #radio-czy_pracowales_na_honey-3-1');
+    buyerRadios.forEach(function (radio) {
+      if (radio && radio.name === radioPaczkomat.name) {
+        radio.name = 'kupione_jako';
+      }
+    });
 
     const inputUlica = form.querySelector('#ulica, [name="ulica"]');
     const inputNrDomu = form.querySelector('#Nr_Domu, [name="Nr_Domu"], #NrDomu, [name="NrDomu"]');
     const inputNrLokalu = form.querySelector('#Nr_lokalu, [name="Nr_lokalu"], #Nrlokalu, [name="Nrlokalu"]');
     const inputKodPocztowy = form.querySelector('#Kod_Pocztowy, [name="Kod_Pocztowy"], #KodPocztowy, [name="KodPocztowy"], input[placeholder*="Kod pocztowy"]');
     const inputMiasto = form.querySelector('#Miasto, [name="Miasto"]');
-
-    if (!radioPaczkomat) return;
 
     // Załaduj Leaflet jeśli jeszcze nie istnieje
     loadLeafletAssets(function () {
@@ -203,14 +212,14 @@
       if (e.target === modal) closeModal();
     });
 
-    // Przełączanie KURIER vs PACZKOMAT
-    const allRadios = form.querySelectorAll('input[name="czy_pracowales_na_honey"]');
-    allRadios.forEach(function (radio) {
+    // Przełączanie KURIER vs PACZKOMAT (słuchamy WYŁĄCZNIE tych dwóch opcji dostawy)
+    const deliveryRadios = [radioCourier, radioPaczkomat].filter(Boolean);
+    deliveryRadios.forEach(function (radio) {
       radio.addEventListener('change', function () {
         const actBar = document.getElementById('honey-inpost-action-bar');
         const selCard = document.getElementById('honey-selected-paczkomat');
 
-        if (radioPaczkomat.checked) {
+        if (radioPaczkomat && radioPaczkomat.checked) {
           inpostWrapper.style.display = 'block';
           if (selCard && selCard.style.display === 'flex') {
             if (actBar) actBar.style.display = 'none';
@@ -218,7 +227,7 @@
             if (actBar) actBar.style.display = 'flex';
             openModal();
           }
-        } else {
+        } else if (radioCourier && radioCourier.checked) {
           inpostWrapper.style.display = 'none';
           if (actBar) actBar.style.display = 'flex';
           if (selCard) selCard.style.display = 'none';
